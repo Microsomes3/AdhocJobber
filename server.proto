@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package scheduler;
+
+option go_package = "microsomes.com/scheduler";
+
+service SchedulerService {
+
+    rpc runTask(RunTaskRequest) returns (RunTaskResponse);
+    rpc createTask(TaskDefintion) returns (CreateSuccess);
+    // rpc getDefinitions(voidNo) returns (GetDefintionResponse);
+    // rpc getDefintion(voidNo) returns (TaskDefintion);
+    // rpc deleteDefinition(voidNo) returns (voidNo);
+    // rpc killTask(voidNo) returns (voidNo);
+    // rpc getTaskLog(voidNo) returns (voidNo);
+
+}
+
+message voidNo {}
+
+message TaskDefintion {
+     string name = 1;
+}
+
+message GetDefintionResponse {
+    repeated TaskDefintion tasks = 1;
+}
+
+message CreateSuccess {
+    int32 createId = 1;
+    bool created = 2;
+    string name = 3;
+}
+
+message RunTaskRequest {
+    int32 taskId =  1;
+}
+
+message RunTaskResponse {
+    int32 statusCode = 1;
+}

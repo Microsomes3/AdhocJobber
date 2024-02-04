@@ -15,9 +15,20 @@ func init() {
 	}
 }
 
+func TestCreateLinodeSSHKey(t *testing.T) {
+	linode, _ := NewLinodeClient()
+
+	key, err := linode.CreateSSH("testing123")
+	if err != nil {
+		t.Fail()
+	}
+
+	t.Log(key)
+}
+
 func TestLinodeCreateServer(t *testing.T) {
 
-	linode := Linode{}
+	linode, _ := NewLinodeClient()
 
 	server, err := linode.CreateServer("scheduler")
 
@@ -30,9 +41,9 @@ func TestLinodeCreateServer(t *testing.T) {
 }
 
 func TestLinodeDeleteServer(t *testing.T) {
-	exampleInstanceId := 54589548
+	exampleInstanceId := 54606663
 
-	linode := NewLinodeClient()
+	linode, _ := NewLinodeClient()
 
 	err := linode.DeleteServer(exampleInstanceId)
 
@@ -43,7 +54,7 @@ func TestLinodeDeleteServer(t *testing.T) {
 }
 
 func TestGetServer(t *testing.T) {
-	lini := NewLinodeClient()
+	lini, _ := NewLinodeClient()
 	exampleServerId, err := lini.CreateServer("example")
 	if err != nil {
 		t.Fail()

@@ -1,8 +1,10 @@
 package servers
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -43,7 +45,7 @@ func TestCanAddServer(t *testing.T) {
 		t.Fail()
 	}
 
-	jobInstance := &JobInstance{
+	jobInstance := &JobInstanceModel{
 		ServerID:   "jbjb",
 		Status:     "created",
 		Provider:   "linode",
@@ -61,7 +63,7 @@ func TestEstabilishSSHConnection(t *testing.T) {
 
 	db, _ := GetDatabaseConnection()
 
-	var JobInstance JobInstance
+	var JobInstance JobInstanceModel
 
 	result := db.Last(&JobInstance)
 
@@ -75,4 +77,60 @@ func TestEstabilishSSHConnection(t *testing.T) {
 		t.Fail()
 	}
 
+}
+
+func TestExecuteCommands(t *testing.T) {
+
+	db, _ := GetDatabaseConnection()
+
+	commands := []string{
+		// "apt-get update -y",
+		// "pwd",
+		"cat main.go",
+	}
+
+	var JobInstance JobInstanceModel
+
+	result := db.Last(&JobInstance)
+
+	if result.Error != nil {
+		t.Fail()
+	}
+
+	err := JobInstance.ExecuteCommands(commands)
+
+	if err != nil {
+		t.Fail()
+	}
+}
+
+func TestUploadToJobInstance(t *testing.T) {
+
+	db, _ := GetDatabaseConnection()
+
+	var JobInstance JobInstanceModel
+
+	result := db.Last(&JobInstance)
+
+	if result.Error != nil {
+		t.Fail()
+	}
+
+	fi, err := os.ReadFile("../main.go")
+
+	if err != nil {
+		t.Fail()
+	}
+
+	z := bytes.NewBuffer(fi)
+
+	// var bytes bytes.Buffer
+
+	// fmt.Print/ln(b)
+
+	err = JobInstance.UploadFile(*z, "main.go")
+
+	if err != nil {
+		t.Fail()
+	}
 }

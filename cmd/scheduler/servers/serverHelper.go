@@ -8,13 +8,16 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"microsomes.com/scheduler/cmd/scheduler/database"
 )
 
 type Server interface {
@@ -24,37 +27,26 @@ type Server interface {
 	ExecuteCommandOnServer()
 }
 
-type JobInstance struct {
-	Id          uint `gorm:"primaryKey"`
-	ServerID    string
-	Status      string
-	Provider    string
-	SSHPublic   []byte
-	SSHPrivate  []byte
-	IPV4Address string
+type JobInstanceModel struct {
+	gorm.Model
+	ID            uint `gorm:"primaryKey"`
+	ServerID      string
+	Status        string
+	Provider      string
+	SSHPublic     []byte
+	SSHPrivate    []byte
+	IPV4Address   string
+	Created       int64 `gorm:"autoCreateTime"` // Use unix seconds as creating time
+	TaskDefintion database.TaskDefintionModel
 }
 
-func InitDB() {
-
-	fmt.Println("hi")
-
-	db, err := GetDatabaseConnection()
-
-	if err != nil {
-		panic(err)
-	}
-
-	db.AutoMigrate(&JobInstance{})
-	fmt.Println("auto migrate completed")
-}
-
-func (ki *JobInstance) TableName() string {
+func (ki *JobInstanceModel) TableName() string {
 	return "servers"
 }
 
-func (ji *JobInstance) ExecuteCommand() {}
+func (ji *JobInstanceModel) ExecuteCommand() {}
 
-func (ji *JobInstance) SSHConnection() (*ssh.Client, error) {
+func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
 
 	linode, err := NewLinodeClient()
 
@@ -105,26 +97,73 @@ func (ji *JobInstance) SSHConnection() (*ssh.Client, error) {
 
 }
 
-func (ji *JobInstance) ExecuteCommands(cmds []string) error {
+func (ji *JobInstanceModel) ExecuteCommands(cmds []string) error {
 
-	cliemt, err := ji.SSHConnection()
-
-	var b bytes.Buffer
-
-	session.Stdout = &b
-
-	if err := session.Start("apt-get update -y"); err != nil {
-		return nil, err
-	}
+	client, err := ji.SSHConnection()
 
 	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err
+		return err
 	}
 
-	session.Wait()
+	for _, command := range cmds {
+		session, err := client.NewSession()
 
-	fmt.Println(b.String())
+		var b bytes.Buffer
+
+		if err != nil {
+			return err
+		}
+
+		defer session.Close()
+
+		session.Stdout = &b
+
+		if err := session.Start(command); err != nil {
+			return err
+		}
+
+		err = session.Wait()
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(b.String())
+	}
+
+	return nil
+}
+
+func (ji *JobInstanceModel) UploadFile(file bytes.Buffer, fnmame string) error {
+
+	fmt.Println(file.String())
+
+	client, err := ji.SSHConnection()
+
+	if err != nil {
+		return err
+	}
+
+	sftp, err := sftp.NewClient(client)
+
+	if err != nil {
+		return err
+	}
+
+	sf, err := sftp.Create(fmt.Sprintf("/root/%s", fnmame))
+
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(sf, &file)
+
+	if err != nil {
+		return err
+	}
+
+	// file.
+	return nil
 }
 
 func generateSSHKeyPair(label string) (privateKey, publicKey string, err error) {

@@ -94,7 +94,7 @@ func (lin *Linode) CreateServer(label string) (int, error) {
 
 	ip := ipAddress.String()
 
-	lin.Db.Create(&JobInstance{
+	lin.Db.Create(&JobInstanceModel{
 		ServerID:    fmt.Sprint(instance.ID),
 		Status:      string(instance.Status),
 		Provider:    "linode",

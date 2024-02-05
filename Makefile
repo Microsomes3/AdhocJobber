@@ -1,2 +1,2 @@
 all:
-	go build . && ./main
+	go build cmd/scheduler && ./main

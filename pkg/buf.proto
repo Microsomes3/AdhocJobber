@@ -7,7 +7,8 @@ option go_package = "microsomes.com/scheduler";
 service SchedulerService {
 
     rpc runTask(RunTaskRequest) returns (RunTaskResponse);
-    rpc createTask(TaskDefintion) returns (CreateSuccess);
+    rpc createTask(TaskDefintion) returns (CreateTaskResponse);
+    rpc getTasks(voidNo) returns (GetTasksResponse);
     // rpc getDefinitions(voidNo) returns (GetDefintionResponse);
     // rpc getDefintion(voidNo) returns (TaskDefintion);
     // rpc deleteDefinition(voidNo) returns (voidNo);
@@ -19,17 +20,30 @@ service SchedulerService {
 message voidNo {}
 
 message TaskDefintion {
-     string name = 1;
+     string Name = 1;
+     string Runner = 2;
+     string DockerImageUrl = 3;
+     int32  Timeout = 4;
+     string DockerRegistryHost = 5;
+     string DockerRegistryProvider = 6;
+     string DockerAWSAccessCode = 7;
+     string DockerAWSSecretCode = 8;
+
+}
+
+message GetTasksResponse {
+    repeated TaskDefintion tasks =1;
 }
 
 message GetDefintionResponse {
     repeated TaskDefintion tasks = 1;
 }
 
-message CreateSuccess {
+message CreateTaskResponse {
     int32 createId = 1;
+    int32 createdStatus = 5;
     bool created = 2;
-    string name = 3;
+    bool error = 3;
 }
 
 message RunTaskRequest {

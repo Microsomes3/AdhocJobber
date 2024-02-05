@@ -41,7 +41,7 @@ func TestLinodeCreateServer(t *testing.T) {
 }
 
 func TestLinodeDeleteServer(t *testing.T) {
-	exampleInstanceId := 54607049
+	exampleInstanceId := 54612619
 
 	linode, _ := NewLinodeClient()
 

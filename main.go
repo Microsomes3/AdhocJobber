@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	scheduler "microsomes.com/scheduler/bufs"
+	"microsomes.com/scheduler/servers"
 )
 
 type ScheduleService struct {
@@ -39,6 +40,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	servers.InitDB()
 
 	fmt.Println("Scheduler recording service reporting for duty")
 	lis, err := net.Listen("tcp", "localhost:4000")

@@ -1,12 +1,15 @@
 package servers
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/ssh"
@@ -22,23 +25,107 @@ type Server interface {
 }
 
 type JobInstance struct {
-	Id       uint `gorm:"primaryKey"`
-	ServerID string
-	Status   string
-	Provider string
+	Id          uint `gorm:"primaryKey"`
+	ServerID    string
+	Status      string
+	Provider    string
+	SSHPublic   []byte
+	SSHPrivate  []byte
+	IPV4Address string
+}
+
+func InitDB() {
+
+	fmt.Println("hi")
+
+	db, err := GetDatabaseConnection()
+
+	if err != nil {
+		panic(err)
+	}
+
+	db.AutoMigrate(&JobInstance{})
+	fmt.Println("auto migrate completed")
 }
 
 func (ki *JobInstance) TableName() string {
 	return "servers"
 }
 
-func (ji *JobInstance) SaveTODb() {
+func (ji *JobInstance) ExecuteCommand() {}
+
+func (ji *JobInstance) SSHConnection() (*ssh.Client, error) {
+
+	linode, err := NewLinodeClient()
+
+	if err != nil {
+		return nil, err
+	}
+
+	sid, _ := strconv.Atoi(ji.ServerID)
+
+	instance, err := linode.GetServer(sid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if instance.Status != "running" {
+		return nil, errors.New("server not running yet")
+
+	}
+
+	signer, err := ssh.ParsePrivateKey(ji.SSHPrivate)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conf := &ssh.ClientConfig{
+		User:            "root",
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+			ssh.Password(os.Getenv("DEFAULT_PASSWORD_LIN")),
+		},
+	}
+
+	ip := ji.IPV4Address + ":22"
+
+	client, err := ssh.Dial("tcp", ip, conf)
+
+	if err != nil {
+
+		fmt.Println(err.Error())
+
+		return nil, err
+	}
+
+	return client, nil
 
 }
 
-func (ji *JobInstance) ExecuteCommand() {}
+func (ji *JobInstance) ExecuteCommands(cmds []string) error {
 
-func (ji *JobInstance) SSHConnection() {}
+	cliemt, err := ji.SSHConnection()
+
+	var b bytes.Buffer
+
+	session.Stdout = &b
+
+	if err := session.Start("apt-get update -y"); err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	session.Wait()
+
+	fmt.Println(b.String())
+}
 
 func generateSSHKeyPair(label string) (privateKey, publicKey string, err error) {
 	// Generate a new RSA key pair

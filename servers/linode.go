@@ -47,13 +47,13 @@ func GetClient() linodego.Client {
 	return linodeClient
 }
 
-func (lin *Linode) CreateSSH(label string) (string, error) {
-	_, pub, err := generateSSHKeyPair(label)
+func (lin *Linode) CreateSSH(label string) (string, string, error) {
+	priv, pub, err := generateSSHKeyPair(label)
 
 	singleLinePubKey := strings.Join(strings.Split(pub, "\n"), "")
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	_, err = lin.Client.CreateSSHKey(context.Background(), linodego.SSHKeyCreateOptions{
@@ -62,16 +62,16 @@ func (lin *Linode) CreateSSH(label string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return singleLinePubKey, nil
+	return singleLinePubKey, priv, nil
 
 }
 
 func (lin *Linode) CreateServer(label string) (int, error) {
 
-	sskKey, err := lin.CreateSSH(label)
+	pubKey, privKey, err := lin.CreateSSH(label)
 
 	if err != nil {
 		return -1, errors.New("cannot create ssh key")
@@ -83,17 +83,24 @@ func (lin *Linode) CreateServer(label string) (int, error) {
 		Label:          label,
 		Type:           "g6-nanode-1",
 		RootPass:       os.Getenv("DEFAULT_PASSWORD_LIN"),
-		AuthorizedKeys: []string{sskKey},
+		AuthorizedKeys: []string{pubKey},
 	})
 
 	if err != nil {
 		return -1, err
 	}
 
+	ipAddress := instance.IPv4[0]
+
+	ip := ipAddress.String()
+
 	lin.Db.Create(&JobInstance{
-		ServerID: fmt.Sprint(instance.ID),
-		Status:   string(instance.Status),
-		Provider: "linode",
+		ServerID:    fmt.Sprint(instance.ID),
+		Status:      string(instance.Status),
+		Provider:    "linode",
+		SSHPublic:   []byte(pubKey),
+		SSHPrivate:  []byte(privKey),
+		IPV4Address: ip,
 	})
 
 	return instance.ID, nil

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -29,28 +28,38 @@ func main() {
 
 	scc := scheduler.NewSchedulerServiceClient(conn)
 
-	taskResponse, err := scc.GetTasks(context.Background(), &scheduler.VoidNo{})
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(len(taskResponse.Tasks))
-
-	created, err := scc.CreateTask(context.Background(), &scheduler.TaskDefintion{
-		Name:                "scheduler",
-		Runner:              "docker",
-		DockerImageUrl:      "public.ecr.aws/m8l7i2c5/govideocapturev8:latest",
-		Timeout:             60,
-		DockerRegistryHost:  "public.ecr.aws/m8l7i2c5",
-		DockerAWSAccessCode: os.Getenv("ACCESS_TOKEN"),
-		DockerAWSSecretCode: os.Getenv("SECRET_TOKEN"),
+	taskDef, err := scc.GetTask(context.Background(), &scheduler.IdNo{
+		Id: 10,
 	})
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(created)
+	fmt.Println(taskDef)
+
+	// taskResponse, err := scc.GetTasks(context.Background(), &scheduler.VoidNo{})
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Println(len(taskResponse.Tasks))
+
+	// created, err := scc.CreateTask(context.Background(), &scheduler.TaskDefintion{
+	// 	Name:                "scheduler",
+	// 	Runner:              "docker",
+	// 	DockerImageUrl:      "public.ecr.aws/m8l7i2c5/govideocapturev8:latest",
+	// 	Timeout:             60,
+	// 	DockerRegistryHost:  "public.ecr.aws/m8l7i2c5",
+	// 	DockerAWSAccessCode: os.Getenv("ACCESS_TOKEN"),
+	// 	DockerAWSSecretCode: os.Getenv("SECRET_TOKEN"),
+	// })
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Println(created)
 
 }

@@ -88,6 +88,34 @@ func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*
 
 }
 
+func (s *ScheduleService) GetTask(ctx context.Context, in *scheduler.IdNo) (*scheduler.TaskDefintion, error) {
+	var taskDef *database.TaskDefintionModel
+
+	db, err := servers.GetDatabaseConnection()
+	if err != nil {
+		return nil, err
+	}
+
+	tx := db.First(&taskDef, "id=?", in.Id)
+
+	if tx.Error != nil {
+		return nil, err
+	}
+
+	var taskDefR scheduler.TaskDefintion
+
+	taskDefR.Name = taskDef.Name
+	taskDefR.Runner = taskDef.Runner
+	taskDefR.Timeout = taskDef.Timeout
+	taskDefR.DockerImageUrl = taskDef.DockerImageURL
+	taskDefR.DockerRegistryHost = taskDef.DockerRegistryHost
+	taskDefR.DockerAWSAccessCode = taskDef.DockerAWSAccessCode
+	taskDefR.DockerAWSSecretCode = taskDef.DockerAWSSecretCode
+	taskDefR.DockerRegistryProvider = taskDef.DockerRegistryProvider
+
+	return &taskDefR, nil
+}
+
 func InitDB() {
 
 	fmt.Println("hi")

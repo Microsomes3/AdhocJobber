@@ -10,7 +10,7 @@ service SchedulerService {
     rpc createTask(TaskDefintion) returns (CreateTaskResponse);
     rpc getTasks(voidNo) returns (GetTasksResponse);
     rpc getTask(idNo) returns (TaskDefintion);
-    // rpc getDefintion(voidNo) returns (TaskDefintion);
+    // rpc deleteTask(idNo) returns (voidNo);
     // rpc deleteDefinition(voidNo) returns (voidNo);
     // rpc killTask(voidNo) returns (voidNo);
     // rpc getTaskLog(voidNo) returns (voidNo);

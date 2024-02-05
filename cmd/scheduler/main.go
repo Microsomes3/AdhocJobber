@@ -116,6 +116,27 @@ func (s *ScheduleService) GetTask(ctx context.Context, in *scheduler.IdNo) (*sch
 	return &taskDefR, nil
 }
 
+func (s *ScheduleService) DeleteTask(ctx context.Context, in *scheduler.IdNo) (*scheduler.DeleteTaskResponse, error) {
+
+	db, err := servers.GetDatabaseConnection()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var item *database.TaskDefintionModel
+
+	tx := db.Where("id = ?", in.Id).Delete(&item)
+
+	if tx.Error != nil {
+		return nil, err
+	}
+
+	return &scheduler.DeleteTaskResponse{
+		Status: 1,
+	}, nil
+}
+
 func InitDB() {
 
 	fmt.Println("hi")

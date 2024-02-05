@@ -38,6 +38,16 @@ func main() {
 
 	fmt.Println(taskDef)
 
+	delTaskResponse, err := scc.DeleteTask(context.Background(), &scheduler.IdNo{
+		Id: 10,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(delTaskResponse.Status)
+
 	// taskResponse, err := scc.GetTasks(context.Background(), &scheduler.VoidNo{})
 
 	// if err != nil {

@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 type DBMigration struct{}
 
 func NewDBMigration() *DBMigration {
@@ -17,6 +19,12 @@ type TaskDefintionModel struct {
 	DockerRegistryProvider string
 	Timeout                int32
 	JobInstanceModelId     *uint
+	TaskRunsModels         []TaskRunsModel
 }
 
-func (db *DBMigration) InitDB() {}
+type TaskRunsModel struct {
+	ID                   uint   `gorm:"primaryKey"`
+	Status               string `default:"pending"`
+	TaskDefintionModelID uint
+	CreatedAt            time.Time
+}

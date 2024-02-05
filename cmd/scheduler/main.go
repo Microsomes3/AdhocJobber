@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -20,9 +19,34 @@ type ScheduleService struct {
 
 func (s *ScheduleService) RunTask(ctx context.Context, in *scheduler.RunTaskRequest) (*scheduler.RunTaskResponse, error) {
 	fmt.Println("scheduling task")
-	time.Sleep(time.Second)
+
+	var taskDef database.TaskDefintionModel
+
+	db, err := servers.GetDatabaseConnection()
+
+	if err != nil {
+		return nil, err
+	}
+
+	tx := db.Find(&taskDef, "id=?", in.TaskId)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	var ts database.TaskRunsModel = database.TaskRunsModel{
+		Status:               "pending",
+		TaskDefintionModelID: uint(in.TaskId),
+	}
+
+	tx = db.Create(&ts)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
 	return &scheduler.RunTaskResponse{
-		StatusCode: 201,
+		Status: int32(ts.ID),
 	}, nil
 }
 
@@ -149,6 +173,7 @@ func InitDB() {
 
 	db.AutoMigrate(&servers.JobInstanceModel{})
 	db.AutoMigrate(database.TaskDefintionModel{})
+	db.AutoMigrate(database.TaskRunsModel{})
 	fmt.Println("auto migrate completed")
 }
 func main() {
@@ -162,7 +187,7 @@ func main() {
 	InitDB()
 
 	fmt.Println("Scheduler recording service reporting for duty")
-	lis, err := net.Listen("tcp", "localhost:4000")
+	lis, err := net.Listen("tcp", "localhost:4001")
 
 	if err != nil {
 		panic(err)

@@ -20,7 +20,7 @@ func main() {
 
 	fmt.Println("hi")
 
-	conn, err := grpc.Dial("localhost:4000", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:4001", grpc.WithInsecure())
 
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func main() {
 	scc := scheduler.NewSchedulerServiceClient(conn)
 
 	taskDef, err := scc.GetTask(context.Background(), &scheduler.IdNo{
-		Id: 10,
+		Id: 1,
 	})
 
 	if err != nil {
@@ -38,23 +38,39 @@ func main() {
 
 	fmt.Println(taskDef)
 
-	delTaskResponse, err := scc.DeleteTask(context.Background(), &scheduler.IdNo{
-		Id: 10,
+	runTaskResponse, err := scc.RunTask(context.Background(), &scheduler.RunTaskRequest{
+		TaskId: 1,
+		Envs: []*scheduler.EnvironmentOBject{
+			&scheduler.EnvironmentOBject{
+				Key:   "AWS_REGION",
+				Value: "eu-west-1",
+			},
+		},
 	})
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(delTaskResponse.Status)
+	fmt.Println(runTaskResponse.Status)
 
-	// taskResponse, err := scc.GetTasks(context.Background(), &scheduler.VoidNo{})
+	// delTaskResponse, err := scc.DeleteTask(context.Background(), &scheduler.IdNo{
+	// 	Id: 10,
+	// })
 
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// fmt.Println(len(taskResponse.Tasks))
+	// fmt.Println(delTaskResponse.Status)
+
+	// // taskResponse, err := scc.GetTasks(context.Background(), &scheduler.VoidNo{})
+
+	// // if err != nil {
+	// // 	panic(err)
+	// // }
+
+	// // fmt.Println(len(taskResponse.Tasks))
 
 	// created, err := scc.CreateTask(context.Background(), &scheduler.TaskDefintion{
 	// 	Name:                "scheduler",

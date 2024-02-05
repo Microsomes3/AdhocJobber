@@ -18,7 +18,6 @@ type TaskDefintionModel struct {
 	DockerAWSSecretCode    string
 	DockerRegistryProvider string
 	Timeout                int32
-	JobInstanceModelId     *uint
 	TaskRunsModels         []TaskRunsModel
 }
 
@@ -27,4 +26,5 @@ type TaskRunsModel struct {
 	Status               string `default:"pending"`
 	TaskDefintionModelID uint
 	CreatedAt            time.Time
+	JobInstanceModelId   *uint
 }

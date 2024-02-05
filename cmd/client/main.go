@@ -28,15 +28,15 @@ func main() {
 
 	scc := scheduler.NewSchedulerServiceClient(conn)
 
-	taskDef, err := scc.GetTask(context.Background(), &scheduler.IdNo{
-		Id: 1,
-	})
+	// taskDef, err := scc.GetTask(context.Background(), &scheduler.IdNo{
+	// 	Id: 1,
+	// })
 
-	if err != nil {
-		panic(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println(taskDef)
+	// fmt.Println(taskDef)
 
 	runTaskResponse, err := scc.RunTask(context.Background(), &scheduler.RunTaskRequest{
 		TaskId: 1,

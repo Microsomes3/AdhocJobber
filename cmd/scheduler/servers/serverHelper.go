@@ -17,20 +17,18 @@ import (
 	"golang.org/x/crypto/ssh"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"microsomes.com/scheduler/cmd/scheduler/database"
 )
 
 type JobInstanceModel struct {
 	gorm.Model
-	ID            uint `gorm:"primaryKey"`
-	ServerID      string
-	Status        string
-	Provider      string
-	SSHPublic     []byte
-	SSHPrivate    []byte
-	IPV4Address   string
-	Created       int64 `gorm:"autoCreateTime"` // Use unix seconds as creating time
-	TaskDefintion database.TaskDefintionModel
+	ID          uint `gorm:"primaryKey"`
+	ServerID    string
+	Status      string
+	Provider    string
+	SSHPublic   []byte
+	SSHPrivate  []byte
+	IPV4Address string
+	Created     int64 `gorm:"autoCreateTime"` // Use unix seconds as creating time
 }
 
 func (ki *JobInstanceModel) TableName() string {

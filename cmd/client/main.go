@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -34,22 +35,22 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(taskResponse)
+	fmt.Println(len(taskResponse.Tasks))
 
-	// created, err := scc.CreateTask(context.Background(), &scheduler.TaskDefintion{
-	// 	Name:                "scheduler",
-	// 	Runner:              "docker",
-	// 	DockerImageUrl:      "public.ecr.aws/m8l7i2c5/govideocapturev8:latest",
-	// 	Timeout:             60,
-	// 	DockerRegistryHost:  "public.ecr.aws/m8l7i2c5",
-	// 	DockerAWSAccessCode: os.Getenv("ACCESS_TOKEN"),
-	// 	DockerAWSSecretCode: os.Getenv("SECRET_TOKEN"),
-	// })
+	created, err := scc.CreateTask(context.Background(), &scheduler.TaskDefintion{
+		Name:                "scheduler",
+		Runner:              "docker",
+		DockerImageUrl:      "public.ecr.aws/m8l7i2c5/govideocapturev8:latest",
+		Timeout:             60,
+		DockerRegistryHost:  "public.ecr.aws/m8l7i2c5",
+		DockerAWSAccessCode: os.Getenv("ACCESS_TOKEN"),
+		DockerAWSSecretCode: os.Getenv("SECRET_TOKEN"),
+	})
 
-	// if err != nil {
-	// 	panic(err)
-	// }
+	if err != nil {
+		panic(err)
+	}
 
-	// fmt.Println(created)
+	fmt.Println(created)
 
 }

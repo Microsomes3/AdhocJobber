@@ -57,7 +57,7 @@ func (s *ScheduleService) CreateTask(ctx context.Context, in *scheduler.TaskDefi
 
 func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*scheduler.GetTasksResponse, error) {
 
-	_, err := servers.GetDatabaseConnection()
+	db, err := servers.GetDatabaseConnection()
 
 	if err != nil {
 		return nil, err
@@ -65,7 +65,22 @@ func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*
 
 	var tasks []*scheduler.TaskDefintion
 
-	// db.Limit(10).Find(&tasks)
+	var taskItems []*database.TaskDefintionModel
+
+	db.Limit(1000).Find(&taskItems)
+
+	for _, i := range taskItems {
+		tasks = append(tasks, &scheduler.TaskDefintion{
+			Name:                i.Name,
+			Runner:              i.Runner,
+			DockerImageUrl:      i.DockerImageURL,
+			Timeout:             i.Timeout,
+			DockerRegistryHost:  i.DockerRegistryHost,
+			DockerAWSAccessCode: i.DockerAWSAccessCode,
+			DockerAWSSecretCode: i.DockerAWSSecretCode,
+		})
+
+	}
 
 	return &scheduler.GetTasksResponse{
 		Tasks: tasks,

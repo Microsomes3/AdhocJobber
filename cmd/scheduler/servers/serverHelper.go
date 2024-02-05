@@ -20,13 +20,6 @@ import (
 	"microsomes.com/scheduler/cmd/scheduler/database"
 )
 
-type Server interface {
-	CreateServer() (bool, error)
-	GetServer()
-	DeleteServer()
-	ExecuteCommandOnServer()
-}
-
 type JobInstanceModel struct {
 	gorm.Model
 	ID            uint `gorm:"primaryKey"`

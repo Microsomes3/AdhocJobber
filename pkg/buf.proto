@@ -9,7 +9,7 @@ service SchedulerService {
     rpc runTask(RunTaskRequest) returns (RunTaskResponse);
     rpc createTask(TaskDefintion) returns (CreateTaskResponse);
     rpc getTasks(voidNo) returns (GetTasksResponse);
-    // rpc getDefinitions(voidNo) returns (GetDefintionResponse);
+    rpc getTask(idNo) returns (TaskDefintion);
     // rpc getDefintion(voidNo) returns (TaskDefintion);
     // rpc deleteDefinition(voidNo) returns (voidNo);
     // rpc killTask(voidNo) returns (voidNo);
@@ -18,6 +18,10 @@ service SchedulerService {
 }
 
 message voidNo {}
+
+message idNo {
+    int32 Id = 1;
+}
 
 message TaskDefintion {
      string Name = 1;

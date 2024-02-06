@@ -16,6 +16,10 @@ type TaskRunJob struct {
 	M          *sync.Mutex
 }
 
+func (trj *TaskRunJob) GetName() string {
+	return "TaskRunJob"
+}
+
 func NewTaskRun() *TaskRunJob {
 	return &TaskRunJob{
 		NextRun:    int32(time.Now().Add(time.Minute).Unix()),

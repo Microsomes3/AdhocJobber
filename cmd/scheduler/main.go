@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/runner"
 	"microsomes.com/scheduler/cmd/scheduler/servers"
 	scheduler "microsomes.com/scheduler/pkg/bufs"
 )
@@ -185,6 +186,10 @@ func main() {
 	}
 
 	InitDB()
+
+	heartbeat := runner.NewHeartbeat()
+
+	go heartbeat.StartWorkers()
 
 	fmt.Println("Scheduler recording service reporting for duty")
 	lis, err := net.Listen("tcp", "localhost:4001")

@@ -1,7 +1,5 @@
 package database
 
-import "time"
-
 type DBMigration struct{}
 
 func NewDBMigration() *DBMigration {
@@ -25,6 +23,7 @@ type TaskRunsModel struct {
 	ID                   uint   `gorm:"primaryKey"`
 	Status               string `default:"pending"`
 	TaskDefintionModelID uint
-	CreatedAt            time.Time
-	JobInstanceModelId   *uint
+	Started              int32
+	Ended                int32
+	JobInstanceModelId   uint
 }

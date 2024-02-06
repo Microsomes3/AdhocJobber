@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/linode/linodego"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
+	"microsomes.com/scheduler/cmd/scheduler/database"
 
 	"net/http"
 	"os"
@@ -69,7 +71,7 @@ func (lin *Linode) CreateSSH(label string) (string, string, error) {
 
 }
 
-func (lin *Linode) CreateServer(label string) (int, error) {
+func (lin *Linode) CreateServer(label string, taskRunID uint) (int, error) {
 
 	pubKey, privKey, err := lin.CreateSSH(label)
 
@@ -94,14 +96,34 @@ func (lin *Linode) CreateServer(label string) (int, error) {
 
 	ip := ipAddress.String()
 
-	lin.Db.Create(&JobInstanceModel{
+	jobInstanceModel := &JobInstanceModel{
 		ServerID:    fmt.Sprint(instance.ID),
 		Status:      string(instance.Status),
 		Provider:    "linode",
 		SSHPublic:   []byte(pubKey),
 		SSHPrivate:  []byte(privKey),
 		IPV4Address: ip,
-	})
+	}
+
+	tx := lin.Db.Create(jobInstanceModel)
+
+	if tx.Error != nil {
+		return -1, err
+	}
+
+	var taskRun database.TaskRunsModel
+
+	tx = lin.Db.Find(&taskRun, "id=?", taskRunID)
+
+	if tx.Error != nil {
+		return -1, nil
+	}
+
+	taskRun.JobInstanceModelId = jobInstanceModel.ID
+	taskRun.Started = int32(time.Now().Unix())
+	taskRun.Status = "PROVISIONED"
+
+	lin.Db.Save(&taskRun)
 
 	return instance.ID, nil
 }

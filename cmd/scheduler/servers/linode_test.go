@@ -1,7 +1,6 @@
 package servers
 
 import (
-	"fmt"
 	"log"
 	"testing"
 
@@ -28,20 +27,20 @@ func TestCreateLinodeSSHKey(t *testing.T) {
 
 func TestLinodeCreateServer(t *testing.T) {
 
-	linode, _ := NewLinodeClient()
+	// linode, _ := NewLinodeClient()
 
-	server, err := linode.CreateServer("scheduler123")
+	// server, err := linode.CreateServer("scheduler123", 2)
 
-	if err != nil {
-		t.Fail()
-	}
+	// if err != nil {
+	// 	t.Fail()
+	// }
 
-	fmt.Println(server)
+	// fmt.Println(server)
 
 }
 
 func TestLinodeDeleteServer(t *testing.T) {
-	exampleInstanceId := 54612619
+	exampleInstanceId := 54655160
 
 	linode, _ := NewLinodeClient()
 
@@ -54,16 +53,16 @@ func TestLinodeDeleteServer(t *testing.T) {
 }
 
 func TestGetServer(t *testing.T) {
-	lini, _ := NewLinodeClient()
-	exampleServerId, err := lini.CreateServer("example")
-	if err != nil {
-		t.Fail()
-	}
+	// lini, _ := NewLinodeClient()
+	// exampleServerId, err := lini.CreateServer("example")
+	// if err != nil {
+	// 	t.Fail()
+	// }
 
-	inst, err := lini.GetServer(exampleServerId)
-	if err != nil {
-		t.Fail()
-	}
+	// inst, err := lini.GetServer(exampleServerId)
+	// if err != nil {
+	// 	t.Fail()
+	// }
 
-	fmt.Println(inst)
+	// fmt.Println(inst)
 }

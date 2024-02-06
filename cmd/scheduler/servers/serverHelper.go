@@ -178,14 +178,6 @@ func generateSSHKeyPair(label string) (privateKey, publicKey string, err error) 
 	}
 	publicKey = string(ssh.MarshalAuthorizedKey(publicKeyBytes))
 
-	f, err := os.Create("keys_" + label)
-
-	f.Write([]byte(privateKey))
-
-	if err != nil {
-		return "", "", err
-	}
-
 	fmt.Println("pass")
 
 	s := strings.Replace(publicKey, "\n\n", "\n", -1)

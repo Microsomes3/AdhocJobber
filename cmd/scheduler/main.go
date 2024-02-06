@@ -191,6 +191,8 @@ func main() {
 
 	go heartbeat.StartWorkers()
 
+	go heartbeat.StartTaskScheduler()
+
 	fmt.Println("Scheduler recording service reporting for duty")
 	lis, err := net.Listen("tcp", "localhost:4001")
 

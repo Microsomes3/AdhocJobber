@@ -58,6 +58,7 @@ func (hb *Heartbeat) GetName() string {
 
 func (hb *Heartbeat) Beat() {
 
+	fmt.Println("beat")
 	//find all jobs that need to run and execute them in parallel goroutines
 
 	for _, j := range hb.StaticJobs {
@@ -66,8 +67,6 @@ func (hb *Heartbeat) Beat() {
 
 			hb.AddJob(j)
 
-		} else {
-			fmt.Println("not yet")
 		}
 	}
 
@@ -80,6 +79,8 @@ type JobRunner interface {
 }
 
 func (hb *Heartbeat) StartTaskScheduler() {
+
+	fmt.Println("hiii")
 
 	for {
 		time.Sleep(time.Second)

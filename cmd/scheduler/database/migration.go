@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 type DBMigration struct{}
 
 func NewDBMigration() *DBMigration {
@@ -26,4 +28,12 @@ type TaskRunsModel struct {
 	Started              int32
 	Ended                int32
 	JobInstanceModelId   uint
+}
+
+func (trm *TaskRunsModel) IsTimedOut() bool {
+	//WIP
+	endBy := int64(trm.Started)
+
+	return time.Now().Unix()
+	return trm.Started
 }

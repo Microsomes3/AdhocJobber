@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"microsomes.com/scheduler/cmd/scheduler/database"
-	"microsomes.com/scheduler/cmd/scheduler/servers"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 )
 
 func init() {
@@ -18,12 +18,12 @@ func init() {
 }
 
 func TestCanPullDefs(t *testing.T) {
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 	if err != nil {
 		t.Fail()
 	}
 
-	var tasks []database.TaskDefintionModel
+	var tasks []models.TaskDefintionModel
 
 	db.Limit(10).Find(&tasks)
 

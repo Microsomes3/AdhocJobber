@@ -4,16 +4,16 @@ import (
 	"sync"
 	"time"
 
-	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 )
 
 type ExecuteTaskJob struct {
-	TaskRunModel database.TaskRunsModel
+	TaskRunModel models.TaskRunsModel
 	M            *sync.Mutex
 	NextRun      int32
 }
 
-func NewExecuteTask(taskRunModel database.TaskRunsModel) *ExecuteTaskJob {
+func NewExecuteTask(taskRunModel models.TaskRunsModel) *ExecuteTaskJob {
 	return &ExecuteTaskJob{
 		TaskRunModel: taskRunModel,
 		M:            &sync.Mutex{},

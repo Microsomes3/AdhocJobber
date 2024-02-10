@@ -1,39 +1,22 @@
 package database
 
-import "time"
+import (
+	"fmt"
+	"os"
 
-type DBMigration struct{}
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
 
-func NewDBMigration() *DBMigration {
-	return &DBMigration{}
-}
+func GetDatabaseConnection() (*gorm.DB, error) {
 
-type TaskDefintionModel struct {
-	ID                     uint `gorm:"primaryKey"`
-	Name                   string
-	Runner                 string
-	DockerImageURL         string
-	DockerRegistryHost     string
-	DockerAWSAccessCode    string
-	DockerAWSSecretCode    string
-	DockerRegistryProvider string
-	Timeout                int32
-	TaskRunsModels         []TaskRunsModel
-}
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/scheduler", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_IP"), os.Getenv("DB_PORT"))
 
-type TaskRunsModel struct {
-	ID                   uint   `gorm:"primaryKey"`
-	Status               string `default:"pending"`
-	TaskDefintionModelID uint
-	Started              int32
-	Ended                int32
-	JobInstanceModelId   uint
-}
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 
-func (trm *TaskRunsModel) IsTimedOut() bool {
-	//WIP
-	endBy := int64(trm.Started)
+	if err != nil {
+		return nil, err
+	}
 
-	return time.Now().Unix()
-	return trm.Started
+	return db, nil
 }

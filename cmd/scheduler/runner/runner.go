@@ -33,9 +33,12 @@ func (h *Heartbeat) StartWorkers() {
 func NewHeartbeat() *Heartbeat {
 	r := NewTaskRun() //task runner job
 
+	timeoutJob := NewTimeoutServerJob()
+
 	var jobs []JobRunner
 
 	jobs = append(jobs, r)
+	jobs = append(jobs, timeoutJob)
 
 	return &Heartbeat{
 		StaticJobs:    jobs,

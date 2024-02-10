@@ -9,8 +9,8 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 	"microsomes.com/scheduler/cmd/scheduler/runner"
-	"microsomes.com/scheduler/cmd/scheduler/servers"
 	scheduler "microsomes.com/scheduler/pkg/bufs"
 )
 
@@ -21,9 +21,9 @@ type ScheduleService struct {
 func (s *ScheduleService) RunTask(ctx context.Context, in *scheduler.RunTaskRequest) (*scheduler.RunTaskResponse, error) {
 	fmt.Println("scheduling task")
 
-	var taskDef database.TaskDefintionModel
+	var taskDef models.TaskDefintionModel
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (s *ScheduleService) RunTask(ctx context.Context, in *scheduler.RunTaskRequ
 		return nil, tx.Error
 	}
 
-	var ts database.TaskRunsModel = database.TaskRunsModel{
+	var ts models.TaskRunsModel = models.TaskRunsModel{
 		Status:               "pending",
 		TaskDefintionModelID: uint(in.TaskId),
 	}
@@ -53,13 +53,13 @@ func (s *ScheduleService) RunTask(ctx context.Context, in *scheduler.RunTaskRequ
 
 func (s *ScheduleService) CreateTask(ctx context.Context, in *scheduler.TaskDefintion) (*scheduler.CreateTaskResponse, error) {
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		return nil, err
 	}
 
-	td := &database.TaskDefintionModel{
+	td := &models.TaskDefintionModel{
 		Name:                in.Name,
 		Runner:              in.Runner,
 		DockerImageURL:      in.DockerImageUrl,
@@ -82,7 +82,7 @@ func (s *ScheduleService) CreateTask(ctx context.Context, in *scheduler.TaskDefi
 
 func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*scheduler.GetTasksResponse, error) {
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*
 
 	var tasks []*scheduler.TaskDefintion
 
-	var taskItems []*database.TaskDefintionModel
+	var taskItems []*models.TaskDefintionModel
 
 	db.Limit(1000).Find(&taskItems)
 
@@ -114,9 +114,9 @@ func (s *ScheduleService) GetTasks(ctx context.Context, in *scheduler.VoidNo) (*
 }
 
 func (s *ScheduleService) GetTask(ctx context.Context, in *scheduler.IdNo) (*scheduler.TaskDefintion, error) {
-	var taskDef *database.TaskDefintionModel
+	var taskDef *models.TaskDefintionModel
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -143,13 +143,13 @@ func (s *ScheduleService) GetTask(ctx context.Context, in *scheduler.IdNo) (*sch
 
 func (s *ScheduleService) DeleteTask(ctx context.Context, in *scheduler.IdNo) (*scheduler.DeleteTaskResponse, error) {
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		return nil, err
 	}
 
-	var item *database.TaskDefintionModel
+	var item *models.TaskDefintionModel
 
 	tx := db.Where("id = ?", in.Id).Delete(&item)
 
@@ -166,15 +166,16 @@ func InitDB() {
 
 	fmt.Println("hi")
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		panic(err)
 	}
 
-	db.AutoMigrate(&servers.JobInstanceModel{})
-	db.AutoMigrate(database.TaskDefintionModel{})
-	db.AutoMigrate(database.TaskRunsModel{})
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.JobInstanceModel{})
+	db.AutoMigrate(models.TaskDefintionModel{})
+	db.AutoMigrate(models.TaskRunsModel{})
 	fmt.Println("auto migrate completed")
 }
 func main() {

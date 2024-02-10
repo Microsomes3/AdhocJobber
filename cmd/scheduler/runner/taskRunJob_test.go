@@ -7,7 +7,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"microsomes.com/scheduler/cmd/scheduler/database"
-	"microsomes.com/scheduler/cmd/scheduler/servers"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 )
 
 func init() {
@@ -30,16 +30,16 @@ func TestTaskRunJob(t *testing.T) {
 }
 
 func TestUpdateRunJob(t *testing.T) {
-	var run database.TaskRunsModel
+	var run models.TaskRunsModel
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 	if err != nil {
 		t.Fail()
 	}
 
 	db.Last(&run)
 
-	run.JobInstanceModelId = 5
+	run.JobInstanceModelId = 7
 
 	db.Save(&run)
 

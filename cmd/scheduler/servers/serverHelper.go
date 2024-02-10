@@ -15,31 +15,26 @@ import (
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 )
 
-type JobInstanceModel struct {
-	gorm.Model
-	ID            uint `gorm:"primaryKey"`
-	ServerID      string
-	Status        string
-	Provider      string
-	SSHPublic     []byte
-	SSHPrivate    []byte
-	IPV4Address   string
-	Created       int64 `gorm:"autoCreateTime"` // Use unix seconds as creating time
-	TaskRunsModel database.TaskRunsModel
+type JobInstance struct {
+	JI models.JobInstanceModel
 }
 
-func (ki *JobInstanceModel) TableName() string {
+func NewJobInstance(jobInstanceModel models.JobInstanceModel) *JobInstance {
+	return &JobInstance{
+		JI: jobInstanceModel,
+	}
+}
+
+func (ki *JobInstance) TableName() string {
 	return "servers"
 }
 
-func (ji *JobInstanceModel) ExecuteCommand() {}
+func (ji *JobInstance) ExecuteCommand() {}
 
-func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
+func (ji *JobInstance) SSHConnection() (*ssh.Client, error) {
 
 	linode, err := NewLinodeClient()
 
@@ -47,7 +42,7 @@ func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
 		return nil, err
 	}
 
-	sid, _ := strconv.Atoi(ji.ServerID)
+	sid, _ := strconv.Atoi(ji.JI.ServerCloudProviderID)
 
 	instance, err := linode.GetServer(sid)
 
@@ -60,7 +55,7 @@ func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
 
 	}
 
-	signer, err := ssh.ParsePrivateKey(ji.SSHPrivate)
+	signer, err := ssh.ParsePrivateKey(ji.JI.SSHPrivate)
 
 	if err != nil {
 		return nil, err
@@ -75,7 +70,7 @@ func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
 		},
 	}
 
-	ip := ji.IPV4Address + ":22"
+	ip := ji.JI.IPV4Address + ":22"
 
 	client, err := ssh.Dial("tcp", ip, conf)
 
@@ -90,7 +85,7 @@ func (ji *JobInstanceModel) SSHConnection() (*ssh.Client, error) {
 
 }
 
-func (ji *JobInstanceModel) ExecuteCommands(cmds []string) error {
+func (ji *JobInstance) ExecuteCommands(cmds []string) error {
 
 	client, err := ji.SSHConnection()
 
@@ -127,7 +122,7 @@ func (ji *JobInstanceModel) ExecuteCommands(cmds []string) error {
 	return nil
 }
 
-func (ji *JobInstanceModel) UploadFile(file bytes.Buffer, fnmame string) error {
+func (ji *JobInstance) UploadFile(file bytes.Buffer, fnmame string) error {
 
 	fmt.Println(file.String())
 
@@ -185,17 +180,4 @@ func generateSSHKeyPair(label string) (privateKey, publicKey string, err error) 
 	s := strings.Replace(publicKey, "\n\n", "\n", -1)
 
 	return privateKey, s, nil
-}
-
-func GetDatabaseConnection() (*gorm.DB, error) {
-
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/scheduler", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_IP"), os.Getenv("DB_PORT"))
-
-	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

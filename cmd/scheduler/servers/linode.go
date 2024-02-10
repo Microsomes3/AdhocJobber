@@ -12,6 +12,7 @@ import (
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 
 	"net/http"
 	"os"
@@ -24,7 +25,7 @@ type Linode struct {
 
 func NewLinodeClient() (*Linode, error) {
 
-	db, err := GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 	if err != nil {
 		return nil, err
 	}
@@ -96,13 +97,13 @@ func (lin *Linode) CreateServer(label string, taskRunID uint) (int, error) {
 
 	ip := ipAddress.String()
 
-	jobInstanceModel := &JobInstanceModel{
-		ServerID:    fmt.Sprint(instance.ID),
-		Status:      string(instance.Status),
-		Provider:    "linode",
-		SSHPublic:   []byte(pubKey),
-		SSHPrivate:  []byte(privKey),
-		IPV4Address: ip,
+	jobInstanceModel := &models.JobInstanceModel{
+		ServerCloudProviderID: fmt.Sprint(instance.ID),
+		InstanceStatus:        string(instance.Status),
+		CloudProvider:         "linode",
+		SSHPublic:             []byte(pubKey),
+		SSHPrivate:            []byte(privKey),
+		IPV4Address:           ip,
 	}
 
 	tx := lin.Db.Create(jobInstanceModel)
@@ -111,7 +112,7 @@ func (lin *Linode) CreateServer(label string, taskRunID uint) (int, error) {
 		return -1, err
 	}
 
-	var taskRun database.TaskRunsModel
+	var taskRun models.TaskRunsModel
 
 	tx = lin.Db.Find(&taskRun, "id=?", taskRunID)
 

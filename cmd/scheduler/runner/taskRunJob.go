@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 	"microsomes.com/scheduler/cmd/scheduler/servers"
 )
 
@@ -36,14 +37,14 @@ func (trj *TaskRunJob) Run() error {
 
 	//lets execute logic then set the next run time based on my choice
 
-	db, err := servers.GetDatabaseConnection()
+	db, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		trj.ErrorCount++
 		return err
 	}
 
-	var taskRuns []*database.TaskRunsModel
+	var taskRuns []*models.TaskRunsModel
 
 	tx := db.Limit(100).Find(&taskRuns)
 

@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"microsomes.com/scheduler/cmd/scheduler/database"
+	"microsomes.com/scheduler/cmd/scheduler/models"
 )
 
 func init() {
@@ -30,7 +32,7 @@ func TestGenerateSSHKeyPair(t *testing.T) {
 }
 
 func TestCanGetDBConnection(t *testing.T) {
-	_, err := GetDatabaseConnection()
+	_, err := database.GetDatabaseConnection()
 
 	if err != nil {
 		t.Fail()
@@ -45,15 +47,15 @@ func TestCanAddServer(t *testing.T) {
 		t.Fail()
 	}
 
-	jobInstance := &JobInstanceModel{
-		ServerID:   "jbjb",
-		Status:     "created",
-		Provider:   "linode",
-		SSHPrivate: []byte(priv),
-		SSHPublic:  []byte(pub),
+	jobInstance := &models.JobInstanceModel{
+		ServerCloudProviderID: "jbjb",
+		InstanceStatus:        "created",
+		CloudProvider:         "linode",
+		SSHPrivate:            []byte(priv),
+		SSHPublic:             []byte(pub),
 	}
 
-	db, _ := GetDatabaseConnection()
+	db, _ := database.GetDatabaseConnection()
 
 	db.Create(jobInstance)
 
@@ -61,17 +63,19 @@ func TestCanAddServer(t *testing.T) {
 
 func TestEstabilishSSHConnection(t *testing.T) {
 
-	db, _ := GetDatabaseConnection()
+	db, _ := database.GetDatabaseConnection()
 
-	var JobInstance JobInstanceModel
+	var JobInstanceModel models.JobInstanceModel
 
-	result := db.Last(&JobInstance)
+	result := db.Last(&JobInstanceModel)
 
 	if result.Error != nil {
 		t.Fail()
 	}
 
-	_, err := JobInstance.SSHConnection()
+	jobInstance := NewJobInstance(JobInstanceModel)
+
+	_, err := jobInstance.SSHConnection()
 
 	if err != nil {
 		t.Fail()
@@ -81,7 +85,7 @@ func TestEstabilishSSHConnection(t *testing.T) {
 
 func TestExecuteCommands(t *testing.T) {
 
-	db, _ := GetDatabaseConnection()
+	db, _ := database.GetDatabaseConnection()
 
 	commands := []string{
 		// "apt-get update -y",
@@ -89,13 +93,14 @@ func TestExecuteCommands(t *testing.T) {
 		"cat main.go",
 	}
 
-	var JobInstance JobInstanceModel
+	var JobInstanceModel models.JobInstanceModel
 
-	result := db.Last(&JobInstance)
+	result := db.Last(&JobInstanceModel)
 
 	if result.Error != nil {
 		t.Fail()
 	}
+	JobInstance := NewJobInstance(JobInstanceModel)
 
 	err := JobInstance.ExecuteCommands(commands)
 
@@ -106,15 +111,17 @@ func TestExecuteCommands(t *testing.T) {
 
 func TestUploadToJobInstance(t *testing.T) {
 
-	db, _ := GetDatabaseConnection()
+	db, _ := database.GetDatabaseConnection()
 
-	var JobInstance JobInstanceModel
+	var JobInstanceModel models.JobInstanceModel
 
-	result := db.Last(&JobInstance)
+	result := db.Last(&JobInstanceModel)
 
 	if result.Error != nil {
 		t.Fail()
 	}
+
+	JobInstance := NewJobInstance(JobInstanceModel)
 
 	fi, err := os.ReadFile("../main.go")
 
@@ -133,4 +140,33 @@ func TestUploadToJobInstance(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+}
+
+func TestCreateTaskRun(t *testing.T) {
+	db, err := database.GetDatabaseConnection()
+	if err != nil {
+		t.Fail()
+	}
+
+	// updateData := map[string]interface{}{
+	// 	"status":               "running",
+	// 	"TaskDefintionModelID": 1,
+	// 	"JobInstanceModelId":   nil,
+	// }
+
+	taskRun := &models.TaskRunsModel{
+		Status:               "pending nigger",
+		TaskDefintionModelID: 1,
+		// JobInstanceModelId:  ,
+	}
+
+	// tx := db.Model(&database.TaskRunsModel{}).Create(updateData)
+
+	tx := db.Create(taskRun)
+
+	if tx.Error != nil {
+		t.Fail()
+	}
+
+	// fmt.Println(tx)
 }
